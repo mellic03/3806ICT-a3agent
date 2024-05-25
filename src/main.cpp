@@ -3,6 +3,11 @@
 #include "a3env/motors.h"
 #include "a3env/sonars.h"
 
+#include "agent.hpp"
+
+
+std::vector<Agent> agents(5);
+
 
 
 void agentLogic( int agentID, ros::ServiceClient &sonars, ros::ServiceClient &motors )
@@ -31,7 +36,9 @@ void agentLogic( int agentID, ros::ServiceClient &sonars, ros::ServiceClient &mo
     else
     {
         linear  = 0.1f;
-        angular = 0.0f;
+        angular = (rand() % 100) / 100.0f;
+        angular -= 0.5f;
+        angular *= 0.5f;
     }
 
 
