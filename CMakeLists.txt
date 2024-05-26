@@ -52,15 +52,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
+#   worldupdate.msg
 # )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
-#   Service1.srv
-#   Service2.srv
+#   plan.srv
 # )
 
 ## Generate actions in the 'action' folder
@@ -75,6 +73,10 @@ find_package(catkin REQUIRED COMPONENTS
 #   DEPENDENCIES
 #   geometry_msgs#   std_msgs
 # )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -213,6 +215,7 @@ include_directories(
 add_executable(
   a3agent
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/agent.cpp
 )
 
 target_link_libraries(
@@ -220,5 +223,5 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(a3agent a3env_generate_messages_cpp)
+add_dependencies(a3agent a3agent_generate_messages_cpp)
 # ---------------------------------------------------------------
