@@ -29,7 +29,7 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
             if (msg.data & (1 << i))
             {
-                m_hostile_locations[i] = W*row + col;
+                m_plan_srv.request.hostiles[i] = W*row + col;
             }
         }
     }

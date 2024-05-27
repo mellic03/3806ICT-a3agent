@@ -47,7 +47,6 @@ public:
     ros::ServiceClient  *m_plan_client;
     ros::ServiceClient  *m_motors_client;
     a3planner::plan      m_plan_srv;
-    std::vector<int16_t> m_hostile_locations; // -1 denotes unknown
 
     glm::vec2 m_position;
     float     m_bearing;
@@ -60,10 +59,12 @@ public:
     Agent( int id, ros::ServiceClient *plan_client, ros::ServiceClient *motors_client )
     :   m_ID            (id),
         m_plan_client   (plan_client),
-        m_motors_client (motors_client),
-        m_hostile_locations(A3ENV_NUM_HOSTILES, -1)
+        m_motors_client (motors_client)
     {
-
+        for (int i=0; i<A3ENV_NUM_HOSTILES; i++)
+        {
+            m_plan_srv.request.hostiles[i] = -1;
+        }
     };
 
     void sonars_callback( const a3env::sonars &msg );
