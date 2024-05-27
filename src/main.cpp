@@ -5,6 +5,9 @@
 #include "a3env/odom.h"
 #include "a3planner/plan.h"
 
+#include "a3env/motors.h"
+
+
 #include "agent.hpp"
 
 
@@ -32,8 +35,8 @@ int main( int argc, char **argv )
         std::string label1 = "/a3env/sonars" + std::to_string(i);
         std::string label2 = "/a3env/odom" + std::to_string(i);
 
-        subscribers0[i] = n.subscribe(label1, 512, &Agent::sonars_callback, &agents[i]);
-        subscribers1[i] = n.subscribe(label2, 512, &Agent::odom_callback, &agents[i]);
+        subscribers0[i] = n.subscribe(label1, 16, &Agent::sonars_callback, &agents[i]);
+        subscribers1[i] = n.subscribe(label2, 16, &Agent::odom_callback, &agents[i]);
     }
 
     ros::spin();

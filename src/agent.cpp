@@ -16,8 +16,30 @@ Agent::sonars_callback( const a3env::sonars &msg )
     row = glm::clamp(row, 0, 11);
     col = glm::clamp(col, 0, 11);
 
-    int W = 12;
-    m_plan_srv.request.world[W*row + col] = uint8_t(msg.blocktype);
+
+    constexpr int W = A3ENV_MAP_WIDTH;
+
+    // Update known hostile locations if response is BLOCK_HOSTILE
+    // -----------------------------------------------------------
+    if (msg.blocktype == BLOCK_HOSTILE)
+    {
+        for (int i=0; i<A3ENV_NUM_HOSTILES; i++)
+        {
+            int idx = msg.data & (1 << i);
+
+            if (msg.data & (1 << i))
+            {
+                m_hostile_locations[i] = W*row + col;
+            }
+        }
+    }
+    // -----------------------------------------------------------
+
+    else
+    {
+        m_plan_srv.request.world[W*row + col] = uint8_t(msg.blocktype);
+    }
+
 
     update_motors();
 }

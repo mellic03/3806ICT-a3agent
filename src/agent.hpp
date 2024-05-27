@@ -11,6 +11,22 @@
 #include "a3planner/plan.h"
 
 
+
+enum BlockType
+{
+    BLOCK_UNKNOWN  = 0,
+    BLOCK_AIR      = 1,
+    BLOCK_WALL     = 2,
+    BLOCK_SURVIVOR = 3,
+    BLOCK_HOSTILE  = 4
+};
+
+#define A3ENV_NUM_AGENTS   6
+#define A3ENV_NUM_HOSTILES 6
+#define A3ENV_MAP_WIDTH    12
+
+
+
 class Agent
 {
 private:
@@ -31,6 +47,7 @@ public:
     ros::ServiceClient  *m_plan_client;
     ros::ServiceClient  *m_motors_client;
     a3planner::plan      m_plan_srv;
+    std::vector<int16_t> m_hostile_locations; // -1 denotes unknown
 
     glm::vec2 m_position;
     float     m_bearing;
@@ -43,7 +60,8 @@ public:
     Agent( int id, ros::ServiceClient *plan_client, ros::ServiceClient *motors_client )
     :   m_ID            (id),
         m_plan_client   (plan_client),
-        m_motors_client (motors_client)
+        m_motors_client (motors_client),
+        m_hostile_locations(A3ENV_NUM_HOSTILES, -1)
     {
 
     };
