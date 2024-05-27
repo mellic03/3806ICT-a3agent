@@ -210,8 +210,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-
-
 add_executable(
   a3agent
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp

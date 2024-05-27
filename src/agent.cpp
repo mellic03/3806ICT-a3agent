@@ -17,13 +17,13 @@ Agent::sonars_callback( const a3env::sonars &msg )
     col = glm::clamp(col, 0, 11);
 
 
-    constexpr int W = A3ENV_MAP_WIDTH;
+    constexpr size_t W = a3env::MAP_WIDTH;
 
     // Update known hostile locations if response is BLOCK_HOSTILE
     // -----------------------------------------------------------
-    if (msg.blocktype == BLOCK_HOSTILE)
+    if (msg.blocktype == a3env::BLOCK_HOSTILE)
     {
-        for (int i=0; i<A3ENV_NUM_HOSTILES; i++)
+        for (int i=0; i<a3env::NUM_HOSTILES; i++)
         {
             int idx = msg.data & (1 << i);
 

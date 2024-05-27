@@ -6,16 +6,13 @@
 #include "a3planner/plan.h"
 
 #include "a3env/motors.h"
-
-
 #include "agent.hpp"
 
+#include "../../a3env/src/common.hpp"
 
-
-static constexpr size_t             NUM_AGENTS = 6;
-static std::vector<Agent>           agents       (NUM_AGENTS);
-static std::vector<ros::Subscriber> subscribers0 (NUM_AGENTS);
-static std::vector<ros::Subscriber> subscribers1 (NUM_AGENTS);
+static std::vector<Agent>           agents       (a3env::NUM_AGENTS);
+static std::vector<ros::Subscriber> subscribers0 (a3env::NUM_AGENTS);
+static std::vector<ros::Subscriber> subscribers1 (a3env::NUM_AGENTS);
 
 
 int main( int argc, char **argv )
@@ -28,7 +25,7 @@ int main( int argc, char **argv )
     ros::ServiceClient plan_client   = n.serviceClient<a3planner::plan>("/a3planner/plan");
     ros::ServiceClient motors_client = n.serviceClient<a3env::motors>("/a3env/motors");
 
-    for (int i=0; i<NUM_AGENTS; i++)
+    for (int i=0; i<a3env::NUM_AGENTS; i++)
     {
         agents[i] = Agent(i, &plan_client, &motors_client);
 

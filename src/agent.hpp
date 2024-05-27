@@ -10,21 +10,7 @@
 #include "a3env/motors.h"
 #include "a3planner/plan.h"
 
-
-
-enum BlockType
-{
-    BLOCK_UNKNOWN  = 0,
-    BLOCK_AIR      = 1,
-    BLOCK_WALL     = 2,
-    BLOCK_SURVIVOR = 3,
-    BLOCK_HOSTILE  = 4
-};
-
-#define A3ENV_NUM_AGENTS   6
-#define A3ENV_NUM_HOSTILES 6
-#define A3ENV_MAP_WIDTH    12
-
+#include "../../a3env/src/common.hpp"
 
 
 class Agent
@@ -61,7 +47,7 @@ public:
         m_plan_client   (plan_client),
         m_motors_client (motors_client)
     {
-        for (int i=0; i<A3ENV_NUM_HOSTILES; i++)
+        for (int i=0; i<a3env::NUM_HOSTILES; i++)
         {
             m_plan_srv.request.hostiles[i] = -1;
         }
