@@ -3,62 +3,33 @@
 
 
 void
-Agent::scanning_behaviour()
-{
-    if (m_bearing >= m_scan_bearing + 3.0f*M_PI)
-    {
-        m_state = STATE_IDLE;
-    }
-
-    m_linear = 0.0f;
-    m_bearing += 0.05f;
-}
-
-
-void
 Agent::idle_behaviour()
 {
+    static int count = 0;
+
+    count += 1;
+
+    if (count >= 256)
+    {
+        count = 0;
+    }
+
+    else
+    {
+        return;
+    }
+
+
     request_plan();
 
 
-    auto &plan = m_plan_srv.response.plan;
-
-    m_path.resize(0);
-    glm::vec2 current = glm::floor(m_position) + 0.5f;
-
-    for (int i=0; i<m_plan_srv.response.moves; i++)
+    // Print worldview and plan
+    // --------------------------------------------------------------------
+    for (int i=0; i<a3env::MAP_WIDTH; i++)
     {
-        switch (plan[i])
+        for (int j=0; j<a3env::MAP_WIDTH; j++)
         {
-            default: break;
-            case 'l': current += glm::vec2(-1.0f, 0.0f); break;
-            case 'r': current += glm::vec2(+1.0f, 0.0f); break;
-            case 'u': current += glm::vec2(0.0f, -1.0f); break;
-            case 'd': current += glm::vec2(0.0f, +1.0f); break;
-        }
-
-        int row = int(current.y);
-        int col = int(current.x);
-
-        if (m_worldview[a3env::MAP_WIDTH*row + col] != a3env::BLOCK_AIR)
-        {
-            break;
-        }
-
-        std::cout << "plan[" << i << "]: " << current.x << ", " << current.y << "\n";
-
-        m_path.push_back(current);
-    }
-
-    std::reverse(m_path.begin(), m_path.end());
-
-
-
-    for (int i=0; i<12; i++)
-    {
-        for (int j=0; j<12; j++)
-        {
-            int n = int(m_worldview[12*i + j]);
+            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
 
             if (i == int(m_position.y) && j == int(m_position.x))
             {
@@ -71,16 +42,15 @@ Agent::idle_behaviour()
         }
         std::cout << "\n";
     }
-    std::cout << "\n";
-
-
 
     std::cout << "Plan: ";
     for (int i=0; i<m_plan_srv.response.moves; i++)
     {
         std::cout << char(m_plan_srv.response.plan[i]) << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
+    // --------------------------------------------------------------------
+
 
     m_state = STATE_FOLLOWING_PLAN;
 }
@@ -91,28 +61,21 @@ Agent::follow_behaviour()
 {
     if (m_path.empty())
     {
-        set_state(STATE_SCANNING);
+        set_state(STATE_IDLE);
         return;
     }
 
-    static int count = 0;
-
-    if (m_sonar_dist < 0.1f)
-    {
-        count += 1;
-    }
-
-    if (count >= 256)
-    {
-        count = 0;
-        set_state(STATE_SCANNING);
-    }
 
     glm::vec2 current = m_path.back();
-    auto cell = m_worldview[a3env::MAP_WIDTH*int(current.y) + int(current.x)];
+    int row = int(current.y);
+    int col = int(current.x);
+
+    auto cell = m_worldview[a3env::MAP_WIDTH*row + col];
+
+
     if (cell != a3env::BLOCK_AIR)
     {
-        set_state(STATE_SCANNING);
+        set_state(STATE_IDLE);
         return;
     }
 
@@ -125,9 +88,7 @@ Agent::follow_behaviour()
     else
     {
         glm::vec2 dir = glm::normalize(current - m_position);
-        m_bearing = glm::mix(m_bearing, asin(dir.y), 0.1f);
-        // std::cout << "bearing: " << m_bearing << "\n";
-        // std::cout << "dir: " << dir.x << ", " << dir.y << "\n";
+        m_bearing = atan2(dir.y, dir.x);
     }
 
     m_linear = 0.1f;
@@ -137,9 +98,9 @@ Agent::follow_behaviour()
 void
 Agent::set_state( Agent::State state )
 {
-    if (state == STATE_SCANNING)
+    if (state == STATE_IDLE)
     {
-        m_scan_bearing = m_bearing;
+        m_linear = 0.0f;
     }
 
     m_state = state;
@@ -153,7 +114,6 @@ Agent::update()
     switch (m_state)
     {
         case STATE_IDLE:            idle_behaviour();     break;
-        case STATE_SCANNING:        scanning_behaviour(); break;
         case STATE_FOLLOWING_PLAN:  follow_behaviour();   break;
     }
 
@@ -165,15 +125,9 @@ Agent::update()
 void
 Agent::sonars_callback( const a3env::sonars &msg )
 {
-    // static uint64_t prev_utc = msg.timestamp;
-    // uint64_t utc = msg.timestamp;
     m_sonar_dist = msg.distance;
-    // float delta = (float(utc) / float(prev_utc)) / 1000000.0f;
-    // std::cout << "dt: " << delta << "\n";
-    // prev_utc = utc;
 
-
-    glm::vec2 dir = glm::vec2(cos(m_bearing), sin(m_bearing));
+    glm::vec2 dir = glm::vec2(msg.dx, msg.dy);
     glm::vec2 cell = m_position + (m_sonar_dist + 0.00001f)*dir;
 
     int row = int(msg.yhit);
@@ -208,39 +162,20 @@ Agent::sonars_callback( const a3env::sonars &msg )
     }
 
 
-    for (float i=0.0f; i<=msg.distance; i+=1.0f)
+    for (float i=0.0f; i<=msg.distance; i+=0.25f)
     {
         glm::vec2 pos = m_position + i*dir;
 
         int r = int(pos.y);
         int c = int(pos.x);
     
-        if (r < 0 || r >= 12 || c < 0 || c >= 12)
+        if (r < 0 || r >= a3env::MAP_WIDTH || c < 0 || c >= a3env::MAP_WIDTH)
         {
-            continue;
+            break;
         }
 
-        m_worldview[12*r + c] = uint8_t(a3env::BLOCK_AIR);
+        m_worldview[a3env::MAP_WIDTH * r + c] = uint8_t(a3env::BLOCK_AIR);
     }
-
-    // std::cout << row << ", " << col << ": " << msg.blocktype << "\n";
-
-    // for (int i=0; i<12; i++)
-    // {
-    //     for (int j=0; j<12; j++)
-    //     {
-    //         int n = int(m_worldview[12*i + j]);
-        
-    //         if (n == 0) std::cout << "? ";
-    //         if (n == 1) std::cout << "  ";
-    //         if (n == 2) std::cout << "# ";
-    //         if (n == 4) std::cout << "X ";
-
-    //         // std::cout << int(m_worldview[12*i + j]) << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
-    // std::cout << "\n";
 
 
 
@@ -255,7 +190,8 @@ Agent::odom_callback( const a3env::odom &msg )
     m_position.y = msg.ypos;
     // m_bearing    = msg.bearing;
 
-    // std::cout << "m_position: " << m_position.x << ", " << m_position.y << "\n";
+    // std::cout << "ODOM CALLBACK!\n";
+    // return;
 
 
     int W   = a3env::MAP_WIDTH;
@@ -271,17 +207,13 @@ Agent::odom_callback( const a3env::odom &msg )
 void
 Agent::update_motors()
 {
-    a3env::motors srv;
-    srv.request.agentid = m_ID;
-    srv.request.linear  = m_linear;
-    srv.request.bearing = m_bearing;
+    a3env::motors m;
 
+    m.agentid = m_ID;
+    m.bearing = m_bearing;
+    m.linear  = m_linear;
 
-    if (!m_motors_client->call(srv))
-    {
-        ROS_ERROR("Could not call service \"/a3env/motors\"");
-        return;
-    }
+    m_motors_pub->publish(m);
 }
 
 
@@ -299,13 +231,41 @@ Agent::request_plan()
         m_plan_srv.request.world[i] = m_worldview[i];
     }
 
-    // m_plan_srv.request.world // world data is already stored here.
-
     if (!m_plan_client->call(m_plan_srv))
     {
         ROS_ERROR("Could not call service \"/a3planner/plan\"");
         return;
     }
+
+
+    auto &plan = m_plan_srv.response.plan;
+
+    m_path.resize(0);
+    glm::vec2 current = glm::floor(m_position) + 0.5f;
+
+    for (int i=0; i<m_plan_srv.response.moves; i++)
+    {
+        switch (plan[i])
+        {
+            default: break;
+            case 'l': current += glm::vec2(-1.0f, 0.0f); break;
+            case 'r': current += glm::vec2(+1.0f, 0.0f); break;
+            case 'u': current += glm::vec2(0.0f, -1.0f); break;
+            case 'd': current += glm::vec2(0.0f, +1.0f); break;
+        }
+
+        int row = int(current.y);
+        int col = int(current.x);
+
+        if (m_worldview[a3env::MAP_WIDTH*row + col] != a3env::BLOCK_AIR)
+        {
+            break;
+        }
+
+        m_path.push_back(current);
+    }
+
+    std::reverse(m_path.begin(), m_path.end());
 
 }
 
@@ -346,7 +306,6 @@ Agent::follow_plan()
     // {
     //     m_state = STATE_IDLE;
     // }
-
 
 
 

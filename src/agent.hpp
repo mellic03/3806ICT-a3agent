@@ -35,7 +35,8 @@ public:
 
     int m_ID;
     ros::ServiceClient  *m_plan_client;
-    ros::ServiceClient  *m_motors_client;
+    // ros::ServiceClient  *m_motors_client;
+    ros::Publisher      *m_motors_pub;
 
 
     std::vector<glm::vec2> m_path;
@@ -53,10 +54,10 @@ public:
 
     Agent() {  };
 
-    Agent( int id, ros::ServiceClient *plan_client, ros::ServiceClient *motors_client )
+    Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub )
     :   m_ID            (id),
         m_plan_client   (plan_client),
-        m_motors_client (motors_client),
+        m_motors_pub (motors_pub),
         m_state         (STATE_IDLE),
         m_worldview     (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0)
     {
