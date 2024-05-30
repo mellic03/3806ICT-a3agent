@@ -25,6 +25,7 @@ Agent::idle_behaviour()
             else if (n == 0) std::cout << "? ";
             else if (n == 1) std::cout << "  ";
             else if (n == 2) std::cout << "# ";
+            else if (n == 3) std::cout << "s ";
         }
         std::cout << "\n";
     }
@@ -159,6 +160,11 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
 
     if (uint8_t(msg.blocktype) == a3env::BLOCK_WALL)
+    {
+        m_worldview[W*row + col] = uint8_t(msg.blocktype);
+    }
+
+    if (uint8_t(msg.blocktype) == a3env::BLOCK_SURVIVOR)
     {
         m_worldview[W*row + col] = uint8_t(msg.blocktype);
     }
