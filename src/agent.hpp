@@ -28,19 +28,28 @@ private:
 
     Agent::State m_state;
 
+    float m_scan_bearing = 0.0f;
+
 
 public:
 
     int m_ID;
     ros::ServiceClient  *m_plan_client;
     ros::ServiceClient  *m_motors_client;
-    a3planner::plan      m_plan_srv;
 
-    glm::vec2 m_position;
+
+    std::vector<glm::vec2> m_path;
+    std::vector<int>       m_worldview;
+    a3planner::plan        m_plan_srv;
+
+    glm::vec2 m_position = glm::vec2(1.5f);
     float     m_bearing = 0.0f;
     float     m_linear;
     float     m_angular;
+
     float     m_sonar_dist;
+    glm::vec2 m_sonar_hit;
+
 
     Agent() {  };
 
@@ -48,15 +57,18 @@ public:
     :   m_ID            (id),
         m_plan_client   (plan_client),
         m_motors_client (motors_client),
-        m_state         (STATE_IDLE)
+        m_state         (STATE_IDLE),
+        m_worldview     (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0)
     {
         m_plan_srv.request.world.resize(a3env::MAP_WIDTH*a3env::MAP_WIDTH);
 
         for (int i=0; i<a3env::NUM_HOSTILES; i++)
         {
-            m_plan_srv.request.hostiles[i] = -1;
+            // m_plan_srv.request.hostiles[i] = -1;
         }
     };
+
+    void set_state( Agent::State state );
 
     void sonars_callback( const a3env::sonars &msg );
     void odom_callback( const a3env::odom &msg );

@@ -36,6 +36,7 @@ int main( int argc, char **argv )
         subscribers1[i] = n.subscribe(label2, 16, &Agent::odom_callback, &agents[i]);
     }
 
+
     ros::spin();
 
     return 0;
