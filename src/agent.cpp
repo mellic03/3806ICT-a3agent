@@ -6,21 +6,6 @@ static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
 void
 Agent::idle_behaviour()
 {
-    static int count = 0;
-
-    count += 1;
-
-    if (count >= 256)
-    {
-        count = 0;
-    }
-
-    else
-    {
-        return;
-    }
-
-
     request_plan();
 
 
