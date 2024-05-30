@@ -28,19 +28,17 @@ private:
 
     Agent::State m_state;
 
-    float m_scan_bearing = 0.0f;
-
 
 public:
 
     int m_ID;
     ros::ServiceClient  *m_plan_client;
-    // ros::ServiceClient  *m_motors_client;
     ros::Publisher      *m_motors_pub;
 
 
     std::vector<glm::vec2> m_path;
     std::vector<int>       m_worldview;
+    std::vector<int>       m_hostiles;
     a3planner::plan        m_plan_srv;
 
     glm::vec2 m_position = glm::vec2(1.5f);
@@ -54,19 +52,17 @@ public:
 
     Agent() {  };
 
-    Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub )
-    :   m_ID            (id),
-        m_plan_client   (plan_client),
-        m_motors_pub (motors_pub),
-        m_state         (STATE_IDLE),
-        m_worldview     (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0)
+    Agent( int id,
+           ros::ServiceClient *plan_client, ros::Publisher *motors_pub )
+    :   m_ID              (id),
+        m_plan_client     (plan_client),
+        m_motors_pub      (motors_pub),
+        m_state           (STATE_IDLE),
+        m_worldview       (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0)
     {
-        m_plan_srv.request.world.resize(a3env::MAP_WIDTH*a3env::MAP_WIDTH);
-
-        for (int i=0; i<a3env::NUM_HOSTILES; i++)
-        {
-            // m_plan_srv.request.hostiles[i] = -1;
-        }
+        m_plan_srv.request.world.resize(m_worldview.size());
+        m_plan_srv.request.agent_cells.resize(a3env::NUM_AGENTS);
+        m_plan_srv.request.hostile_cells.resize(a3env::NUM_AGENTS);
     };
 
     void set_state( Agent::State state );
@@ -74,15 +70,11 @@ public:
     void sonars_callback( const a3env::sonars &msg );
     void odom_callback( const a3env::odom &msg );
 
-    void update_motors();
-
     void request_plan();
-    void follow_plan();
-
+    void update_motors();
     void update();
 
     void idle_behaviour();
-    void scanning_behaviour();
     void follow_behaviour();
 };
 

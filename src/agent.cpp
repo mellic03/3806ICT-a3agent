@@ -1,5 +1,6 @@
 #include "agent.hpp"
 
+static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
 
 
 void
@@ -117,10 +118,26 @@ Agent::update()
         case STATE_FOLLOWING_PLAN:  follow_behaviour();   break;
     }
 
+    int row = int(m_position.y);
+    int col = int(m_position.x);
+    // m_agent_positions[m_ID] = a3env::MAP_WIDTH*row + col; 
+
     update_motors();
 }
 
 
+
+void
+Agent::update_motors()
+{
+    a3env::motors m;
+
+    m.agentid = m_ID;
+    m.bearing = m_bearing;
+    m.linear  = m_linear;
+
+    m_motors_pub->publish(m);
+}
 
 void
 Agent::sonars_callback( const a3env::sonars &msg )
@@ -149,7 +166,7 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
             if (msg.data & (1 << i))
             {
-                // m_plan_srv.request.hostiles[i] = W*row + col;
+                m_hostiles[i] = W*row + col;
             }
         }
     }
@@ -178,7 +195,6 @@ Agent::sonars_callback( const a3env::sonars &msg )
     }
 
 
-
     update();
 }
 
@@ -200,21 +216,9 @@ Agent::odom_callback( const a3env::odom &msg )
 
     m_worldview[W*row + col] = uint8_t(a3env::BLOCK_AIR);
 
-    // update();
+    update();
 }
 
-
-void
-Agent::update_motors()
-{
-    a3env::motors m;
-
-    m.agentid = m_ID;
-    m.bearing = m_bearing;
-    m.linear  = m_linear;
-
-    m_motors_pub->publish(m);
-}
 
 
 
@@ -230,6 +234,18 @@ Agent::request_plan()
     {
         m_plan_srv.request.world[i] = m_worldview[i];
     }
+
+    for (int i=0; i<a3env::NUM_AGENTS; i++)
+    {
+        m_plan_srv.request.agent_cells[i] = m_agent_positions[i];
+    }
+
+    for (int i=0; i<a3env::NUM_HOSTILES; i++)
+    {
+        std::cout << i << " ";
+        m_plan_srv.request.hostile_cells[i] = m_hostiles[i];
+    }
+    std::cout << "\n";
 
     if (!m_plan_client->call(m_plan_srv))
     {
@@ -266,48 +282,6 @@ Agent::request_plan()
     }
 
     std::reverse(m_path.begin(), m_path.end());
-
-}
-
-
-
-void
-Agent::follow_plan()
-{
-    // uint16_t *plan = m_plan_srv.response.plan;
-
-    // static int current = 0;
-
-    // if (m_state != STATE_FOLLOWING_PLAN)
-    // {
-    //     m_state = STATE_FOLLOWING_PLAN;
-    //     current = 0;
-    // }
-
-    // if (plan[current] != 0)
-    // {
-    //     uint16_t action = plan[current];
-
-    //     switch (action)
-    //     {
-    //         case 'L':   break;
-    //         case 'R':   break;
-    //         case 'U':   break;
-    //         case 'D':   break;
-
-    //         default:
-    //             break;
-    //     }
-
-    //     current += 1;
-    // }
-
-    // else
-    // {
-    //     m_state = STATE_IDLE;
-    // }
-
-
 
 }
 

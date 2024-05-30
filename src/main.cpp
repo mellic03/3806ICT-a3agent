@@ -10,10 +10,11 @@
 
 #include "../../a3env/src/common.hpp"
 
-static std::vector<Agent>           agents       (a3env::NUM_AGENTS);
-static std::vector<ros::Subscriber> subscribers0 (a3env::NUM_AGENTS);
-static std::vector<ros::Subscriber> subscribers1 (a3env::NUM_AGENTS);
-static std::vector<ros::Publisher>  publishers   (a3env::NUM_AGENTS);
+static std::vector<Agent>           agents          (a3env::NUM_AGENTS);
+// static std::vector<int>             agent_positions (a3env::NUM_AGENTS);
+static std::vector<ros::Subscriber> subscribers0    (a3env::NUM_AGENTS);
+static std::vector<ros::Subscriber> subscribers1    (a3env::NUM_AGENTS);
+static std::vector<ros::Publisher>  publishers      (a3env::NUM_AGENTS);
 
 
 int main( int argc, char **argv )

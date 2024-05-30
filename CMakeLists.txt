@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -209,6 +211,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+set (CMAKE_CXX_FLAGS "-g")
 
 add_executable(
   a3agent
