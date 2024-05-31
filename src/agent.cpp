@@ -59,6 +59,7 @@ Agent::idle_behaviour()
     // --------------------------------------------------------------------
 
     request_plan();
+    print_world();
 
     m_state = STATE_FOLLOWING_PLAN;
 }
@@ -72,8 +73,6 @@ Agent::follow_behaviour()
         set_state(STATE_IDLE);
         return;
     }
-
-    print_world();
 
 
     glm::vec2 current = m_path.back();
