@@ -185,6 +185,7 @@ Agent::sonars_callback( const a3env::sonars &msg )
     }
     // -----------------------------------------------------------
 
+
     if (uint8_t(msg.blocktype) == a3env::BLOCK_WALL)
     {
         m_worldview[W*row + col] = msg.blocktype;
@@ -209,6 +210,12 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
         int cell = m_worldview[a3env::MAP_WIDTH*r + c];
 
+        int h = hostile_at_cell(r, c);
+        if (h != -1)
+        {
+            m_hostiles[h] = std::numeric_limits<uint16_t>::max();
+        }
+
         if (cell == a3env::BLOCK_WALL)
         {
             break;
@@ -223,6 +230,22 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
     update();
 }
+
+
+int
+Agent::hostile_at_cell( int row, int col )
+{
+    for (int i=0; i<a3env::NUM_HOSTILES; i++)
+    {
+        if (m_hostiles[i] != std::numeric_limits<uint16_t>::max())
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 
 
 void
