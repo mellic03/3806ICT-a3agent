@@ -10,31 +10,31 @@ Agent::idle_behaviour()
 
     // Print worldview and plan
     // --------------------------------------------------------------------
-    // for (int i=0; i<a3env::MAP_WIDTH; i++)
-    // {
-    //     for (int j=0; j<a3env::MAP_WIDTH; j++)
-    //     {
-    //         int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
+    for (int i=0; i<a3env::MAP_WIDTH; i++)
+    {
+        for (int j=0; j<a3env::MAP_WIDTH; j++)
+        {
+            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
 
-    //         if (i == int(m_position.y) && j == int(m_position.x))
-    //         {
-    //             std::cout << "o ";
-    //         }
+            if (i == int(m_position.y) && j == int(m_position.x))
+            {
+                std::cout << "o ";
+            }
 
-    //         else if (n == 0) std::cout << "? ";
-    //         else if (n == 1) std::cout << "  ";
-    //         else if (n == 2) std::cout << "# ";
-    //         else if (n == 3) std::cout << "s ";
-    //     }
-    //     std::cout << "\n";
-    // }
+            else if (n == 0) std::cout << "? ";
+            else if (n == 1) std::cout << "  ";
+            else if (n == 2) std::cout << "# ";
+            else if (n == 3) std::cout << "s ";
+        }
+        std::cout << "\n";
+    }
 
-    // std::cout << "Plan: ";
-    // for (int i=0; i<m_plan_srv.response.moves; i++)
-    // {
-    //     std::cout << char(m_plan_srv.response.plan[i]) << " ";
-    // }
-    // std::cout << "\n\n";
+    std::cout << "Plan: ";
+    for (int i=0; i<m_plan_srv.response.moves; i++)
+    {
+        std::cout << char(m_plan_srv.response.plan[i]) << " ";
+    }
+    std::cout << "\n\n";
     // --------------------------------------------------------------------
 
 
@@ -201,10 +201,6 @@ Agent::odom_callback( const a3env::odom &msg )
     m_position.y = msg.ypos;
     // m_bearing    = msg.bearing;
 
-    // std::cout << "ODOM CALLBACK!\n";
-    // return;
-
-
     int W   = a3env::MAP_WIDTH;
     int row = int(m_position.y);
     int col = int(m_position.x);
@@ -235,7 +231,6 @@ Agent::request_plan()
 
     for (int i=0; i<a3env::NUM_AGENTS; i++)
     {
-        std::cout << i << ": " << m_agent_positions[i] << "\n";
         m_plan_srv.request.agent_cells[i] = m_agent_positions[i];
     }
 
@@ -243,7 +238,6 @@ Agent::request_plan()
     {
         m_plan_srv.request.hostile_cells[i] = m_hostiles[i];
     }
-    std::cout << "\n";
 
     if (!m_plan_client->call(m_plan_srv))
     {
