@@ -43,16 +43,13 @@ Agent::idle_behaviour()
 {
     // Initial delay allowing agent to scan environment first
     // --------------------------------------------------------------------
-    static bool first = true;
-    static int count = 0;
-
-    if (first)
+    if (first_plan == true)
     {
-        if (count >= 256)
+        if (first_plan_count >= 256)
         {
-            first = false;
+            first_plan = false;
         }
-        count += 1;
+        first_plan_count += 1;
 
         return;
     }
@@ -288,6 +285,13 @@ Agent::odom_callback( const a3env::odom &msg )
     m_position.x = msg.xpos;
     m_position.y = msg.ypos;
     // m_bearing    = msg.bearing;
+
+    if (first_odom)
+    {
+        m_home.x = msg.xpos;
+        m_home.y = msg.ypos;
+        first_odom = false;
+    }
 
     int W   = a3env::MAP_WIDTH;
     int row = int(m_position.y);

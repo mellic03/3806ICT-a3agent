@@ -28,6 +28,10 @@ private:
 
     Agent::State m_state;
 
+    bool first_plan = true;
+    int  first_plan_count = 0;
+    bool first_odom = true;
+
 
 public:
 
