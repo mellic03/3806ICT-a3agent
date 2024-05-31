@@ -87,10 +87,10 @@ Agent::follow_behaviour()
         return;
     }
 
-    else
-    {
-        m_worldview[a3env::MAP_WIDTH*row + col] = a3env::BLOCK_AIR;
-    }
+    // else
+    // {
+    //     m_worldview[a3env::MAP_WIDTH*row + col] = a3env::BLOCK_AIR;
+    // }
 
     if (glm::distance(m_position, current) <= 0.1f)
     {
