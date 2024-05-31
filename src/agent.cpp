@@ -186,17 +186,15 @@ Agent::sonars_callback( const a3env::sonars &msg )
     }
     // -----------------------------------------------------------
 
-
     if (uint8_t(msg.blocktype) == a3env::BLOCK_WALL)
     {
-        m_worldview[W*row + col] = uint8_t(msg.blocktype);
+        m_worldview[W*row + col] = msg.blocktype;
     }
 
     if (uint8_t(msg.blocktype) == a3env::BLOCK_SURVIVOR)
     {
-        m_worldview[W*row + col] = uint8_t(msg.blocktype);
+        m_worldview[W*row + col] = msg.blocktype;
     }
-
 
     for (float i=0.0f; i<=msg.distance; i+=0.25f)
     {
@@ -217,7 +215,7 @@ Agent::sonars_callback( const a3env::sonars &msg )
             break;
         }
 
-        else if (cell != a3env::BLOCK_SURVIVOR)
+        else if (cell == a3env::BLOCK_UNKNOWN)
         {
             m_worldview[a3env::MAP_WIDTH * r + c] = uint8_t(a3env::BLOCK_AIR);
         }
