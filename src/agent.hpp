@@ -79,6 +79,7 @@ public:
 
 
     int  hostile_at_cell( int row, int col );
+    int  agent_at_cell( int row, int col );
 
     void set_state( Agent::State state );
 

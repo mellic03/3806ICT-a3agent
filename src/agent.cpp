@@ -81,7 +81,21 @@ Agent::follow_behaviour()
 
     auto cell = m_worldview[a3env::MAP_WIDTH*row + col];
 
-    if (cell == a3env::BLOCK_WALL || cell == a3env::BLOCK_UNKNOWN)
+    if (cell == a3env::BLOCK_WALL)
+    {
+        set_state(STATE_IDLE);
+        return;
+    }
+
+    int h = hostile_at_cell(row, col);
+    if (h != -1)
+    {
+        set_state(STATE_IDLE);
+        return;
+    }
+
+    int a = agent_at_cell(row, col);
+    if (a != -1 && a != m_ID)
     {
         set_state(STATE_IDLE);
         return;
@@ -239,13 +253,33 @@ Agent::hostile_at_cell( int row, int col )
     {
         if (m_hostiles[i] != std::numeric_limits<uint16_t>::max())
         {
-            return i;
+            if (m_hostiles[i] == a3env::MAP_WIDTH*row + col)
+            {
+                return i;
+            }
         }
     }
 
     return -1;
 }
 
+
+int
+Agent::agent_at_cell( int row, int col )
+{
+    for (int i=0; i<a3env::NUM_AGENTS; i++)
+    {
+        if (m_agent_positions[i] != std::numeric_limits<uint16_t>::max())
+        {
+            if (m_agent_positions[i] == a3env::MAP_WIDTH*row + col)
+            {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
 
 
 void
@@ -283,21 +317,21 @@ Agent::request_plan()
         m_plan_srv.request.world[i] = m_worldview[i];
     }
 
-    std::cout << "Agents: ";
+    // std::cout << "Agents: ";
     for (int i=0; i<a3env::NUM_AGENTS; i++)
     {
-        std::cout << m_agent_positions[i] << " ";
+        // std::cout << m_agent_positions[i] << " ";
         m_plan_srv.request.agent_cells[i] = m_agent_positions[i];
     }
-    std::cout << "\n";
+    // std::cout << "\n";
 
-    std::cout << "Hostiles: ";
+    // std::cout << "Hostiles: ";
     for (int i=0; i<a3env::NUM_HOSTILES; i++)
     {
-        std::cout << m_hostiles[i] << " ";
+        // std::cout << m_hostiles[i] << " ";
         m_plan_srv.request.hostile_cells[i] = m_hostiles[i];
     }
-    std::cout << "\n";
+    // std::cout << "\n";
 
     if (!m_plan_client->call(m_plan_srv))
     {
@@ -320,21 +354,6 @@ Agent::request_plan()
             case 'r': current += glm::vec2(+1.0f, 0.0f); break;
             case 'u': current += glm::vec2(0.0f, -1.0f); break;
             case 'd': current += glm::vec2(0.0f, +1.0f); break;
-        }
-
-        int row = int(current.y);
-        int col = int(current.x);
-
-        uint8_t cell = m_worldview[a3env::MAP_WIDTH*row + col];
-
-        if (cell == a3env::BLOCK_UNKNOWN)
-        {
-            break;
-        }
-    
-        if (cell == a3env::BLOCK_WALL)
-        {
-            break;
         }
 
         m_path.push_back(current);
