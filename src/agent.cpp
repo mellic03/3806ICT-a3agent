@@ -260,10 +260,13 @@ Agent::request_plan()
         m_plan_srv.request.world[i] = m_worldview[i];
     }
 
+    std::cout << "Agents: ";
     for (int i=0; i<a3env::NUM_AGENTS; i++)
     {
+        std::cout << m_agent_positions[i] << " ";
         m_plan_srv.request.agent_cells[i] = m_agent_positions[i];
     }
+    std::cout << "\n";
 
     std::cout << "Hostiles: ";
     for (int i=0; i<a3env::NUM_HOSTILES; i++)
