@@ -6,6 +6,23 @@ static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
 void
 Agent::idle_behaviour()
 {
+    // Initial delay allowing agent to scan environment first
+    // --------------------------------------------------------------------
+    static bool first = true;
+    static int count = 0;
+
+    if (first)
+    {
+        if (count >= 256)
+        {
+            first = false;
+        }
+        count += 1;
+
+        return;
+    }
+    // --------------------------------------------------------------------
+
     request_plan();
 
     // Print worldview and plan
@@ -37,7 +54,6 @@ Agent::idle_behaviour()
     std::cout << "\n\n";
     // --------------------------------------------------------------------
 
-
     m_state = STATE_FOLLOWING_PLAN;
 }
 
@@ -58,15 +74,13 @@ Agent::follow_behaviour()
 
     auto cell = m_worldview[a3env::MAP_WIDTH*row + col];
 
-
-    if (cell != a3env::BLOCK_AIR)
+    if (cell != a3env::BLOCK_AIR && cell != a3env::BLOCK_SURVIVOR)
     {
         set_state(STATE_IDLE);
         return;
     }
 
-
-    if (glm::distance(m_position, current) <= 0.25f)
+    if (glm::distance(m_position, current) <= 0.1f)
     {
         m_path.pop_back();
     }
@@ -135,11 +149,11 @@ Agent::sonars_callback( const a3env::sonars &msg )
     int row = int(msg.yhit);
     int col = int(msg.xhit);
 
-    row = glm::clamp(row, 0, 11);
-    col = glm::clamp(col, 0, 11);
+    constexpr int W = a3env::MAP_WIDTH;
 
+    row = glm::clamp(row, 0, W-1);
+    col = glm::clamp(col, 0, W-1);
 
-    constexpr size_t W = a3env::MAP_WIDTH;
 
     // Update known hostile locations if response is BLOCK_HOSTILE
     // -----------------------------------------------------------
@@ -265,10 +279,10 @@ Agent::request_plan()
         int row = int(current.y);
         int col = int(current.x);
 
-        if (m_worldview[a3env::MAP_WIDTH*row + col] != a3env::BLOCK_AIR)
-        {
-            break;
-        }
+        // if (m_worldview[a3env::MAP_WIDTH*row + col] == a3env::BLOCK_WALL)
+        // {
+        //     break;
+        // }
 
         m_path.push_back(current);
     }
