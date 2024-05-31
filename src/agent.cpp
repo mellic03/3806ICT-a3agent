@@ -304,10 +304,10 @@ Agent::request_plan()
 
         uint8_t cell = m_worldview[a3env::MAP_WIDTH*row + col];
 
-        if (cell == a3env::BLOCK_UNKNOWN)
-        {
-            break;
-        }
+        // if (cell == a3env::BLOCK_UNKNOWN)
+        // {
+        //     break;
+        // }
 
         m_path.push_back(current);
     }
