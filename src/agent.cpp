@@ -81,7 +81,7 @@ Agent::follow_behaviour()
 
     auto cell = m_worldview[a3env::MAP_WIDTH*row + col];
 
-    if (cell == a3env::BLOCK_WALL)
+    if (cell == a3env::BLOCK_WALL || cell == a3env::BLOCK_UNKNOWN)
     {
         set_state(STATE_IDLE);
         return;
