@@ -38,7 +38,7 @@ public:
 
     std::vector<glm::vec2> m_path;
     std::vector<int>       m_worldview;
-    std::vector<int>       m_hostiles;
+    std::vector<uint16_t>  m_hostiles;
     a3planner::plan        m_plan_srv;
 
     glm::vec2 m_home     = glm::vec2(1.5f);
@@ -59,7 +59,8 @@ public:
         m_plan_client     (plan_client),
         m_motors_pub      (motors_pub),
         m_state           (STATE_IDLE),
-        m_worldview       (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0)
+        m_worldview       (a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0),
+        m_hostiles        (a3env::NUM_HOSTILES, ~0)
     {
         m_plan_srv.request.world.resize(m_worldview.size());
         m_plan_srv.request.agent_cells.resize(a3env::NUM_AGENTS);

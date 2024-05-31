@@ -151,7 +151,7 @@ Agent::sonars_callback( const a3env::sonars &msg )
 
             if (msg.data & (1 << i))
             {
-                m_hostiles[i] = W*row + col;
+                m_hostiles[i] = uint16_t(W*row + col);
             }
         }
     }
