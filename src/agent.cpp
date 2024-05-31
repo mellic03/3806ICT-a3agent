@@ -1,6 +1,32 @@
 #include "agent.hpp"
 
 static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
+static std::vector<int> m_worldview(a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0);
+
+
+Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub )
+:   m_ID              (id),
+    m_plan_client     (plan_client),
+    m_motors_pub      (motors_pub),
+    m_state           (STATE_IDLE),
+    m_hostiles        (a3env::NUM_HOSTILES, std::numeric_limits<uint16_t>::max())
+{
+    m_plan_srv.request.world.resize(m_worldview.size());
+    m_plan_srv.request.agent_cells.resize(a3env::NUM_AGENTS);
+    m_plan_srv.request.hostile_cells.resize(a3env::NUM_AGENTS);
+
+    const int W = a3env::MAP_WIDTH;
+
+    for (int i=0; i<a3env::MAP_WIDTH; i++)
+    {
+        m_worldview[W*i + 0] = a3env::BLOCK_WALL;
+        m_worldview[W*0 + i] = a3env::BLOCK_WALL;
+        m_worldview[W*i + (W-1)] = a3env::BLOCK_WALL;
+        m_worldview[W*(W-1) + i] = a3env::BLOCK_WALL;
+    }
+}
+
+
 
 
 void
