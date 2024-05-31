@@ -265,10 +265,13 @@ Agent::request_plan()
         m_plan_srv.request.agent_cells[i] = m_agent_positions[i];
     }
 
+    std::cout << "Hostiles: ";
     for (int i=0; i<a3env::NUM_HOSTILES; i++)
     {
+        std::cout << m_hostiles[i] << " ";
         m_plan_srv.request.hostile_cells[i] = m_hostiles[i];
     }
+    std::cout << "\n";
 
     if (!m_plan_client->call(m_plan_srv))
     {
