@@ -8,6 +8,7 @@
 #include "a3env/sonars.h"
 #include "a3env/odom.h"
 #include "a3env/motors.h"
+#include "a3env/deactivate.h"
 #include "a3planner/plan.h"
 
 #include "../../a3env/src/common.hpp"
@@ -23,7 +24,7 @@ private:
         STATE_FOLLOWING_PLAN,
         STATE_MOVING_TO_SURVIVOR,
         STATE_RETURNING_HOME,
-        STATE_SOMETHING_ELSE
+        STATE_FINISHED
     };
 
     Agent::State m_state;
@@ -55,7 +56,8 @@ public:
 
 
     Agent() {  };
-    Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub );
+    Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub,
+           ros::Publisher *deactivate_pub );
 
     int  hostile_at_cell( int row, int col );
     int  agent_at_cell( int row, int col );

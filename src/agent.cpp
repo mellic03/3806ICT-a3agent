@@ -2,9 +2,11 @@
 
 static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
 static std::vector<int> m_worldview(a3env::MAP_WIDTH*a3env::MAP_WIDTH, 0);
+static ros::Publisher  *m_deactivate_pub;
 
 
-Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub )
+Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pub,
+              ros::Publisher *deactivate_pub )
 :   m_ID              (id),
     m_plan_client     (plan_client),
     m_motors_pub      (motors_pub),
@@ -14,6 +16,8 @@ Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pu
     m_plan_srv.request.world.resize(m_worldview.size());
     m_plan_srv.request.agent_cells.resize(a3env::NUM_AGENTS);
     m_plan_srv.request.hostile_cells.resize(a3env::NUM_AGENTS);
+
+    m_deactivate_pub = deactivate_pub; // last-minute spaghett.
 
     const int W = a3env::MAP_WIDTH;
 
@@ -32,34 +36,34 @@ Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pu
 void
 Agent::print_world()
 {
-    // Print worldview and plan
-    // --------------------------------------------------------------------
-    for (int i=0; i<a3env::MAP_WIDTH; i++)
-    {
-        for (int j=0; j<a3env::MAP_WIDTH; j++)
-        {
-            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
+    // // Print worldview and plan
+    // // --------------------------------------------------------------------
+    // for (int i=0; i<a3env::MAP_WIDTH; i++)
+    // {
+    //     for (int j=0; j<a3env::MAP_WIDTH; j++)
+    //     {
+    //         int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
 
-            if (0) // (i == int(m_position.y) && j == int(m_position.x))
-            {
-                std::cout << "o ";
-            }
+    //         if (0) // (i == int(m_position.y) && j == int(m_position.x))
+    //         {
+    //             std::cout << "o ";
+    //         }
 
-            else if (n == 0) std::cout << "? ";
-            else if (n == 1) std::cout << "  ";
-            else if (n == 2) std::cout << "# ";
-            else if (n == 3) std::cout << "s ";
-        }
-        std::cout << "\n";
-    }
+    //         else if (n == 0) std::cout << "? ";
+    //         else if (n == 1) std::cout << "  ";
+    //         else if (n == 2) std::cout << "# ";
+    //         else if (n == 3) std::cout << "s ";
+    //     }
+    //     std::cout << "\n";
+    // }
 
-    std::cout << "Plan: ";
-    for (int i=0; i<m_plan_srv.response.moves; i++)
-    {
-        std::cout << char(m_plan_srv.response.plan[i]) << " ";
-    }
-    std::cout << "\n\n";
-    // --------------------------------------------------------------------
+    // std::cout << "Plan: ";
+    // for (int i=0; i<m_plan_srv.response.moves; i++)
+    // {
+    //     std::cout << char(m_plan_srv.response.plan[i]) << " ";
+    // }
+    // std::cout << "\n\n";
+    // // --------------------------------------------------------------------
 
 }
 
@@ -83,6 +87,11 @@ Agent::idle_behaviour()
 
     request_plan();
     print_world();
+
+    if (m_plan_srv.response.moves == 0)
+    {
+        set_state(STATE_FINISHED);
+    }
 
     m_state = STATE_FOLLOWING_PLAN;
 }
@@ -152,6 +161,15 @@ Agent::set_state( Agent::State state )
         m_linear = 0.0f;
     }
 
+    if (state == STATE_FINISHED)
+    {
+        a3env::deactivate d;
+        d.agentid = m_ID;
+
+        m_deactivate_pub->publish(d);
+        std::cout << "WOOO\n";
+    }
+
     m_state = state;
 }
 
@@ -160,11 +178,16 @@ Agent::set_state( Agent::State state )
 void
 Agent::update()
 {
+    if (m_state == STATE_FINISHED)
+    {
+        return;
+    }
+
+
     int row = int(m_position.y);
     int col = int(m_position.x);
     m_agent_positions[m_ID] = a3env::MAP_WIDTH*row + col; 
 
-    // ROS_INFO("State: %d", m_state);
 
     switch (m_state)
     {
@@ -192,6 +215,11 @@ Agent::update_motors()
 void
 Agent::sonars_callback( const a3env::sonars &msg )
 {
+    if (m_state == STATE_FINISHED)
+    {
+        return;
+    }
+
     m_sonar_dist = msg.distance;
 
     glm::vec2 dir = glm::vec2(msg.dx, msg.dy);
@@ -308,6 +336,11 @@ Agent::agent_at_cell( int row, int col )
 void
 Agent::odom_callback( const a3env::odom &msg )
 {
+    if (m_state == STATE_FINISHED)
+    {
+        return;
+    }
+
     m_position.x = msg.xpos;
     m_position.y = msg.ypos;
     // m_bearing    = msg.bearing;
