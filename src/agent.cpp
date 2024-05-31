@@ -4,6 +4,41 @@ static std::vector<int> m_agent_positions(a3env::NUM_AGENTS, -1);
 
 
 void
+Agent::print_world()
+{
+    // Print worldview and plan
+    // --------------------------------------------------------------------
+    for (int i=0; i<a3env::MAP_WIDTH; i++)
+    {
+        for (int j=0; j<a3env::MAP_WIDTH; j++)
+        {
+            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
+
+            if (0) // (i == int(m_position.y) && j == int(m_position.x))
+            {
+                std::cout << "o ";
+            }
+
+            else if (n == 0) std::cout << "? ";
+            else if (n == 1) std::cout << "  ";
+            else if (n == 2) std::cout << "# ";
+            else if (n == 3) std::cout << "s ";
+        }
+        std::cout << "\n";
+    }
+
+    std::cout << "Plan: ";
+    for (int i=0; i<m_plan_srv.response.moves; i++)
+    {
+        std::cout << char(m_plan_srv.response.plan[i]) << " ";
+    }
+    std::cout << "\n\n";
+    // --------------------------------------------------------------------
+
+}
+
+
+void
 Agent::idle_behaviour()
 {
     // Initial delay allowing agent to scan environment first
@@ -25,35 +60,6 @@ Agent::idle_behaviour()
 
     request_plan();
 
-    // Print worldview and plan
-    // --------------------------------------------------------------------
-    for (int i=0; i<a3env::MAP_WIDTH; i++)
-    {
-        for (int j=0; j<a3env::MAP_WIDTH; j++)
-        {
-            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
-
-            if (i == int(m_position.y) && j == int(m_position.x))
-            {
-                std::cout << "o ";
-            }
-
-            else if (n == 0) std::cout << "? ";
-            else if (n == 1) std::cout << "  ";
-            else if (n == 2) std::cout << "# ";
-            else if (n == 3) std::cout << "s ";
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "Plan: ";
-    for (int i=0; i<m_plan_srv.response.moves; i++)
-    {
-        std::cout << char(m_plan_srv.response.plan[i]) << " ";
-    }
-    std::cout << "\n\n";
-    // --------------------------------------------------------------------
-
     m_state = STATE_FOLLOWING_PLAN;
 }
 
@@ -67,6 +73,8 @@ Agent::follow_behaviour()
         return;
     }
 
+    print_world();
+
 
     glm::vec2 current = m_path.back();
     int row = int(current.y);
@@ -74,10 +82,15 @@ Agent::follow_behaviour()
 
     auto cell = m_worldview[a3env::MAP_WIDTH*row + col];
 
-    if (cell != a3env::BLOCK_AIR && cell != a3env::BLOCK_SURVIVOR)
+    if (cell == a3env::BLOCK_WALL)
     {
         set_state(STATE_IDLE);
         return;
+    }
+
+    else
+    {
+        m_worldview[a3env::MAP_WIDTH*row + col] = a3env::BLOCK_AIR;
     }
 
     if (glm::distance(m_position, current) <= 0.1f)
@@ -114,6 +127,8 @@ Agent::update()
     int row = int(m_position.y);
     int col = int(m_position.x);
     m_agent_positions[m_ID] = a3env::MAP_WIDTH*row + col; 
+
+    // ROS_INFO("State: %d", m_state);
 
     switch (m_state)
     {
@@ -195,12 +210,17 @@ Agent::sonars_callback( const a3env::sonars &msg )
             break;
         }
 
-        if (m_worldview[a3env::MAP_WIDTH*r + c] == a3env::BLOCK_WALL)
+        int cell = m_worldview[a3env::MAP_WIDTH*r + c];
+
+        if (cell == a3env::BLOCK_WALL)
         {
             break;
         }
 
-        m_worldview[a3env::MAP_WIDTH * r + c] = uint8_t(a3env::BLOCK_AIR);
+        else if (cell != a3env::BLOCK_SURVIVOR)
+        {
+            m_worldview[a3env::MAP_WIDTH * r + c] = uint8_t(a3env::BLOCK_AIR);
+        }
     }
 
 
@@ -279,10 +299,12 @@ Agent::request_plan()
         int row = int(current.y);
         int col = int(current.x);
 
-        // if (m_worldview[a3env::MAP_WIDTH*row + col] == a3env::BLOCK_WALL)
-        // {
-        //     break;
-        // }
+        uint8_t cell = m_worldview[a3env::MAP_WIDTH*row + col];
+
+        if (cell == a3env::BLOCK_UNKNOWN)
+        {
+            break;
+        }
 
         m_path.push_back(current);
     }

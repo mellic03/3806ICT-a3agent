@@ -86,6 +86,8 @@ public:
     void update_motors();
     void update();
 
+    void print_world();
+
     void idle_behaviour();
     void follow_behaviour();
 };
