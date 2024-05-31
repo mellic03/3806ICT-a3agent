@@ -41,6 +41,7 @@ public:
     std::vector<int>       m_hostiles;
     a3planner::plan        m_plan_srv;
 
+    glm::vec2 m_home     = glm::vec2(1.5f);
     glm::vec2 m_position = glm::vec2(1.5f);
     float     m_bearing = 0.0f;
     float     m_linear;
@@ -63,6 +64,16 @@ public:
         m_plan_srv.request.world.resize(m_worldview.size());
         m_plan_srv.request.agent_cells.resize(a3env::NUM_AGENTS);
         m_plan_srv.request.hostile_cells.resize(a3env::NUM_AGENTS);
+
+        const int W = a3env::MAP_WIDTH;
+
+        for (int i=0; i<a3env::MAP_WIDTH; i++)
+        {
+            m_worldview[W*i + 0] = a3env::BLOCK_WALL;
+            m_worldview[W*0 + i] = a3env::BLOCK_WALL;
+            m_worldview[W*i + (W-1)] = a3env::BLOCK_WALL;
+            m_worldview[W*(W-1) + i] = a3env::BLOCK_WALL;
+        }
     };
 
     void set_state( Agent::State state );
