@@ -36,35 +36,34 @@ Agent::Agent( int id, ros::ServiceClient *plan_client, ros::Publisher *motors_pu
 void
 Agent::print_world()
 {
-    // // Print worldview and plan
-    // // --------------------------------------------------------------------
-    // for (int i=0; i<a3env::MAP_WIDTH; i++)
-    // {
-    //     for (int j=0; j<a3env::MAP_WIDTH; j++)
-    //     {
-    //         int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
+    // Print worldview and plan
+    // --------------------------------------------------------------------
+    for (int i=0; i<a3env::MAP_WIDTH; i++)
+    {
+        for (int j=0; j<a3env::MAP_WIDTH; j++)
+        {
+            int n = int(m_worldview[a3env::MAP_WIDTH*i + j]);
 
-    //         if (0) // (i == int(m_position.y) && j == int(m_position.x))
-    //         {
-    //             std::cout << "o ";
-    //         }
+            if (0) // (i == int(m_position.y) && j == int(m_position.x))
+            {
+                std::cout << "o ";
+            }
 
-    //         else if (n == 0) std::cout << "? ";
-    //         else if (n == 1) std::cout << "  ";
-    //         else if (n == 2) std::cout << "# ";
-    //         else if (n == 3) std::cout << "s ";
-    //     }
-    //     std::cout << "\n";
-    // }
+            else if (n == 0) std::cout << "? ";
+            else if (n == 1) std::cout << "  ";
+            else if (n == 2) std::cout << "# ";
+            else if (n == 3) std::cout << "s ";
+        }
+        std::cout << "\n";
+    }
 
-    // std::cout << "Plan: ";
-    // for (int i=0; i<m_plan_srv.response.moves; i++)
-    // {
-    //     std::cout << char(m_plan_srv.response.plan[i]) << " ";
-    // }
-    // std::cout << "\n\n";
-    // // --------------------------------------------------------------------
-
+    std::cout << "Plan: ";
+    for (int i=0; i<m_plan_srv.response.moves; i++)
+    {
+        std::cout << char(m_plan_srv.response.plan[i]) << " ";
+    }
+    std::cout << "\n\n";
+    // --------------------------------------------------------------------
 }
 
 
@@ -167,7 +166,6 @@ Agent::set_state( Agent::State state )
         d.agentid = m_ID;
 
         m_deactivate_pub->publish(d);
-        std::cout << "WOOO\n";
     }
 
     m_state = state;
